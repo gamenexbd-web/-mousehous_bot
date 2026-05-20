@@ -2,222 +2,235 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ADS Management - Ultra Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monetag Auto Mathod</title>
 
-<!-- External SDKs -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-:root { --primary: #00f2fe; --secondary: #4facfe; --accent: #ffd700; --glass: rgba(255, 255, 255, 0.08); --border: rgba(255, 255, 255, 0.15); }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', Roboto, sans-serif; background: radial-gradient(circle at top, #1e293b, #0f172a); display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; }
+body {
+  margin:0;
+  height:100vh;
+  font-family:'Segoe UI',sans-serif;
+  background: linear-gradient(-45deg,#1a2a6c,#16222a,#3a0ca3,#000);
+  background-size: 400% 400%;
+  animation: gradientBG 10s ease infinite;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:#fff;
+}
 
-/* 🛑 Access Denied Screen */
-#tgOnly { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10001; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; }
+@keyframes gradientBG {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
 
-/* 🛡️ Start System Overlay */
-#overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+.card {
+  width:350px;
+  padding:25px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter: blur(15px);
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:0 0 20px rgba(0,229,255,0.3);
+  text-align:center;
+  animation: fadeIn 1s ease;
+}
 
-.main-container { width: 92%; max-width: 400px; padding: 35px 20px; border-radius: 32px; background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: center; position: relative; }
+@keyframes fadeIn {
+  from {opacity:0; transform:translateY(20px);}
+  to {opacity:1; transform:translateY(0);}
+}
 
-/* ⏱️ Watching Timer Badge */
-#viewingBadge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; padding: 6px 18px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; z-index: 100; white-space: nowrap; box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4); }
+button {
+  padding:12px 15px;
+  border:none;
+  border-radius:10px;
+  background:#00e5ff;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+  box-shadow:0 0 10px #00e5ff;
+}
 
-.wallet-box { background: rgba(0, 0, 0, 0.25); padding: 25px; border-radius: 24px; margin-bottom: 25px; border: 1px solid var(--border); }
-#adCount { font-size: 50px; font-weight: 800; color: var(--accent); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+button:hover {
+  transform:scale(1.05);
+  box-shadow:0 0 20px #00e5ff;
+}
 
-.timer-info { font-size: 14px; color: #cbd5e1; margin-bottom: 12px; }
-#countdown { color: var(--primary); font-weight: 800; }
+.timer {
+  margin-top:10px;
+  font-size:18px;
+  color:#4caf50;
+}
 
-.progress-track { width: 100%; height: 10px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; }
-.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 1s linear; }
+.progress {
+  width:100%;
+  height:8px;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px;
+  margin-top:10px;
+  overflow:hidden;
+}
 
-.btn-start { padding: 18px 50px; font-size: 18px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 18px; color: #000; cursor: pointer; box-shadow: 0 10px 25px rgba(0, 242, 254, 0.3); }
-.btn-start:active { transform: scale(0.95); }
+.progress-bar {
+  height:100%;
+  width:0%;
+  background:#00e5ff;
+  transition: width 1s linear;
+}
 
-#netStatus { position: absolute; top: 20px; right: 20px; font-size: 10px; padding: 5px 12px; border-radius: 20px; background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); font-weight: bold; }
+.coin {
+  margin-top:10px;
+  font-size:20px;
+  background:#ffd700;
+  color:#000;
+  padding:8px 15px;
+  border-radius:20px;
+  display:inline-block;
+  box-shadow:0 0 10px gold;
+}
 </style>
 </head>
 
-<body oncontextmenu="return false;">
+<body>
 
-<!-- Access Lock -->
-<div id="tgOnly">
-    <div style="font-size: 70px; margin-bottom: 20px;">🚫</div>
-    <h2>Access Denied</h2>
-    <p>This application is only accessible via the <br><b>Official Telegram App</b>.</p>
-</div>
+<div class="card">
+  <h2>🚀 Auto Ads System</h2>
+  <button onclick="enableAuto()">Auto Start</button>
 
-<div id="netStatus">CONNECTING...</div>
-
-<!-- 🛡️ Initial Interaction Overlay -->
-<div id="overlay">
-  <div style="padding: 40px 30px; background: var(--glass); border-radius: 35px; border: 1px solid var(--border); width: 85%; max-width: 350px;">
-    <div style="font-size: 55px; margin-bottom: 15px;">🛡️</div>
-    <h2>Start Securely</h2>
-    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 30px;">Click the button below to verify human interaction and start the auto-earning loop.</p>
-    <button class="btn-start" onclick="initRealClick()">START EARNING</button>
-  </div>
-</div>
-
-<div class="main-container">
-  <div id="viewingBadge">WATCHING AD: <span id="viewingSec">0</span>s</div>
-  <h2 style="font-size: 20px; color: #e2e8f0; margin-top: 5px;">ADS DASHBOARD Pro</h2>
-  
-  <div class="wallet-box">
-    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px;">Accumulated Balance</div>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-      <span style="font-size: 32px;">💰</span>
-      <span id="adCount">0</span>
-    </div>
+  <div class="timer">
+    Next Ads in <span id="countdown">20</span>s
   </div>
 
-  <div class="status-section">
-    <div class="timer-info" id="timerLabel">Status: <span id="countdown">Waiting...</span></div>
-    <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+  <div class="progress">
+    <div class="progress-bar" id="progressBar"></div>
   </div>
-  
-  <div style="margin-top: 25px; font-size: 11px; color: #4ade80;">● CLOUD PROTECTION ACTIVE</div>
+
+  <div class="coin">
+    💰 Coins: <span id="adCount">0</span>
+  </div>
 </div>
 
 <script>
-// ১. সুরক্ষা: রাইট-ক্লিক এবং ইনস্পেক্ট বন্ধ
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.onkeydown = function(e) {
-    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) return false;
+// 🔥 Firebase Configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyA1CLvIhHpfJpl41ZUfWQuD-dl7l8i56CU",
+  authDomain: "update-a4568.firebaseapp.com",
+  projectId: "update-a4568",
+  databaseURL: "https://update-a4568-default-rtdb.firebaseio.com",
+  storageBucket: "update-a4568.firebasestorage.app",
+  messagingSenderId: "898948028661",
+  appId: "1:898948028661:web:81421946783b8e9a9e8dbc"
 };
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let zone1 = "", zone2 = "";
+
+// ফায়ারবেস থেকে জোন আইডি ফেচ করা
+db.ref('monetag_config').on('value', (snap) => {
+    const data = snap.val();
+    if(data) {
+        zone1 = data.zone1;
+        zone2 = data.zone2;
+        injectSDK(zone1, zone2);
+    }
+});
+
+function injectSDK(z1, z2) {
+    document.querySelectorAll('.monetag-sdk').forEach(e => e.remove());
+    [z1, z2].forEach(id => {
+        const s = document.createElement('script');
+        s.src = '//libtl.com/sdk.js';
+        s.dataset.zone = id;
+        s.dataset.sdk = 'show_' + id;
+        s.className = 'monetag-sdk';
+        document.head.appendChild(s);
+    });
+}
 
 const tg = window.Telegram.WebApp;
+tg.ready();
 
-// ২. টেলিগ্রাম অফিসিয়াল অ্যাপ চেক
-function checkTelegram() {
-    if (!tg.initData || tg.platform === "unknown") {
-        document.getElementById("tgOnly").style.display = "flex";
-        return false;
-    }
-    return true;
+let timerInterval;
+let timeLeft = 20;
+
+const clickSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+
+function vibrate(){
+  if(navigator.vibrate){ navigator.vibrate(100); }
 }
 
-if (checkTelegram()) {
-    tg.ready(); tg.expand();
+let adCount = localStorage.getItem("adCount") ? parseInt(localStorage.getItem("adCount")) : 0;
+document.getElementById("adCount").textContent = adCount;
 
-    // Firebase Config (আপনার দেওয়া তথ্য)
-    const firebaseConfig = {
-      apiKey: "AIzaSyA1CLvIhHpfJpl41ZUfWQuD-dl7l8i56CU",
-      authDomain: "update-a4568.firebaseapp.com",
-      projectId: "update-a4568",
-      databaseURL: "https://update-a4568-default-rtdb.firebaseio.com",
-      storageBucket: "update-a4568.firebasestorage.app",
-      messagingSenderId: "898948028661",
-      appId: "1:898948028661:web:81421946783b8e9a9e8dbc"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+let currentZoneIdx = localStorage.getItem("zoneIdx") ? parseInt(localStorage.getItem("zoneIdx")) : 1;
 
-    let zone1 = "", zone2 = "", timerInterval, viewingInterval;
-    const clickSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+function showAdSmart() {
+  const targetID = (currentZoneIdx === 1) ? zone1 : zone2;
+  const openAd = window['show_' + targetID];
 
-    // ৩. রিয়েলটাইম ডাটাবেস থেকে আইডি ফেচ
-    db.ref('monetag_config').on('value', (snap) => {
-        const data = snap.val();
-        if(data) {
-            zone1 = data.zone1; zone2 = data.zone2;
-            injectSDK(zone1, zone2);
-            document.getElementById("netStatus").textContent = "ONLINE";
-        }
-    });
+  if(typeof openAd === "function"){
+    const clickEvent = new MouseEvent('click',{bubbles:true,cancelable:true,view:window});
+    document.body.dispatchEvent(clickEvent);
+    openAd().catch(()=>{});
 
-    function injectSDK(z1, z2) {
-        document.querySelectorAll('.monetag-script').forEach(e => e.remove());
-        [z1, z2].forEach(id => {
-            const s = document.createElement('script');
-            s.src = '//libtl.com/sdk.js'; s.dataset.zone = id; s.dataset.sdk = 'show_' + id;
-            s.className = 'monetag-script'; document.head.appendChild(s);
-        });
-    }
+    clickSound.play();
+    vibrate();
 
-    // ৪. অরিজিনাল লজিক: কাউন্টার ও জোন রোটেশন
-    let adCount = localStorage.getItem("adCount") ? parseInt(localStorage.getItem("adCount")) : 0;
+    adCount++;
+    localStorage.setItem("adCount", adCount);
     document.getElementById("adCount").textContent = adCount;
-    let currentIdx = localStorage.getItem("zoneIdx") ? parseInt(localStorage.getItem("zoneIdx")) : 1;
+    
+    // Animate Count
+    document.getElementById("adCount").style.transform="scale(1.3)";
+    setTimeout(()=>{ document.getElementById("adCount").style.transform="scale(1)"; },200);
+  }
 
-    function showAdSmart() {
-        if(!navigator.onLine) { setTimeout(showAdSmart, 5000); return; }
-        const target = (currentIdx === 1) ? zone1 : zone2;
-        const adFn = window['show_' + target];
-
-        if(typeof adFn === "function") {
-            document.getElementById("countdown").textContent = "Loading Ad Content...";
-            adFn().then(() => {
-                // বিজ্ঞাপন আসার পরেই কেবল কাজ শুরু হবে
-                adCount++; localStorage.setItem("adCount", adCount);
-                document.getElementById("adCount").textContent = adCount;
-                
-                // অরিজিনাল সাউন্ড ও ভাইব্রেশন
-                if(navigator.vibrate) navigator.vibrate(100);
-                clickSound.play();
-                
-                // ডাবল টাইমার শুরু
-                startSyncedTimers(); 
-            }).catch(() => setTimeout(showAdSmart, 3000));
-        } else { setTimeout(showAdSmart, 3000); }
-        
-        currentIdx = (currentIdx === 1) ? 2 : 1;
-        localStorage.setItem("zoneIdx", currentIdx);
-    }
-
-    function startSyncedTimers() {
-        // ১৬-২০ সেকেন্ড র‍্যান্ডম ডুরেশন
-        let timeLeft = Math.floor(Math.random() * (20 - 16 + 1)) + 16;
-        let total = timeLeft;
-        let watchTime = 0;
-        document.getElementById("timerLabel").innerHTML = 'Next Refresh in <span id="countdown"></span>s';
-        document.getElementById("viewingBadge").style.display = "block";
-
-        clearInterval(timerInterval); clearInterval(viewingInterval);
-
-        // উল্টো টাইমার (Dashboard)
-        timerInterval = setInterval(() => {
-            if(!navigator.onLine) return;
-            timeLeft--;
-            document.getElementById("countdown").textContent = timeLeft;
-            document.getElementById("progressBar").style.width = ((total - timeLeft) / total * 100) + "%";
-            
-            // অটো রিলোড লজিক (অ্যাড অটো কেটে যাওয়ার জন্য)
-            if(timeLeft <= 0) { 
-                clearInterval(timerInterval); 
-                location.reload(); 
-            }
-        }, 1000);
-
-        // সোজা টাইমার (Active Watching Badge)
-        viewingInterval = setInterval(() => {
-            if(!navigator.onLine) return;
-            watchTime++;
-            document.getElementById("viewingSec").textContent = watchTime;
-        }, 1000);
-    }
-
-    // ৫. রিয়েল ইউজার ক্লিক হ্যান্ডলার
-    function initRealClick() {
-        document.getElementById("overlay").style.display = "none";
-        localStorage.setItem("systemStarted", "true");
-        showAdSmart();
-    }
-
-    window.onload = () => {
-        // যদি একবার স্টার্ট করা হয়, তবে প্রতিবার অটো আসবে
-        if(localStorage.getItem("systemStarted") === "true") {
-            document.getElementById("overlay").style.display = "none";
-            setTimeout(showAdSmart, 2500);
-        } else { 
-            document.getElementById("overlay").style.display = "flex"; 
-        }
-    };
+  currentZoneIdx = (currentZoneIdx === 1) ? 2 : 1;
+  localStorage.setItem("zoneIdx", currentZoneIdx);
 }
+
+function startAutoTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 20;
+  document.getElementById("countdown").textContent = timeLeft;
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    document.getElementById("countdown").textContent = timeLeft;
+
+    let percent = ((20 - timeLeft) / 20) * 100;
+    document.getElementById("progressBar").style.width = percent + "%";
+
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      setTimeout(()=>{ location.reload(); }, 2000);
+    }
+  }, 1000);
+}
+
+function enableAuto() {
+  localStorage.setItem("adMode", "auto");
+  showAdSmart();
+  startAutoTimer();
+}
+
+window.addEventListener("load", () => {
+  // জোন আইডি লোড হওয়ার জন্য একটু সময় দেওয়া
+  setTimeout(() => {
+    localStorage.setItem("adMode", "auto");
+    showAdSmart();
+    startAutoTimer();
+  }, 2000);
+});
 </script>
 </body>
 </html>
