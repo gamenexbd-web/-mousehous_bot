@@ -3,66 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Protected Ads System</title>
+<title>ADS Dashboard - Ultra Secure</title>
+
+<!-- External SDKs -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
-/* CSS আগের মতই থাকবে */
 :root { --primary: #00f2fe; --secondary: #4facfe; --accent: #ffd700; --glass: rgba(255, 255, 255, 0.08); --border: rgba(255, 255, 255, 0.15); }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
 body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #1e293b, #0f172a); display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; }
-#tgOnly { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+
+/* 🚫 Restriction Screen */
+#tgOnly { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10001; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px; }
+
+/* 🛡️ Start Overlay (রিয়েল ইউজার ক্লিকের জন্য) */
 #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(15px); }
-.main-container { width: 92%; max-width: 400px; padding: 30px 20px; border-radius: 28px; background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); text-align: center; position: relative; }
-#viewingBadge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; z-index: 100; }
-.wallet-box { background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 22px; margin-bottom: 25px; border: 1px solid var(--border); }
-#adCount { font-size: 45px; font-weight: 800; color: var(--accent); }
+
+.main-container { width: 92%; max-width: 400px; padding: 35px 20px; border-radius: 28px; background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: center; position: relative; }
+
+/* ⏱️ Watching Timer Badge */
+#viewingBadge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; z-index: 100; white-space: nowrap; box-shadow: 0 5px 15px rgba(255, 71, 87, 0.3); }
+
+.wallet-box { background: rgba(0, 0, 0, 0.25); padding: 22px; border-radius: 22px; margin-bottom: 25px; border: 1px solid var(--border); }
+#adCount { font-size: 45px; font-weight: 800; color: var(--accent); text-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
+.timer-info { font-size: 14px; color: #cbd5e1; margin-bottom: 12px; }
+#countdown { color: var(--primary); font-weight: 700; }
 .progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; }
 .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 1s linear; }
-.btn-start { padding: 18px 45px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 15px; color: #000; cursor: pointer; }
+.btn-start { padding: 18px 45px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 15px; color: #000; cursor: pointer; box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3); }
+#netStatus { position: absolute; top: 20px; right: 20px; font-size: 10px; padding: 5px 12px; border-radius: 20px; background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); }
 </style>
 </head>
-<body oncontextmenu="return false;"> <!-- রাইট ক্লিক বন্ধ -->
 
+<body oncontextmenu="return false;">
+
+<!-- Access Restriction -->
 <div id="tgOnly">
     <div style="font-size: 60px;">🚫</div>
     <h2>Access Denied</h2>
-    <p>Only Telegram official app is allowed.</p>
+    <p>Please use the <b>Official Telegram App</b> to access this dashboard.</p>
 </div>
 
+<div id="netStatus">FETCHING...</div>
+
+<!-- 🛡️ Smart Start Button (First User Interaction) -->
 <div id="overlay">
-    <div style="padding: 40px; background: var(--glass); border-radius: 30px; border: 1px solid var(--border); width: 85%;">
-        <h2>Verify Identity</h2>
-        <button class="btn-start" onclick="initRealClick()">START EARNING</button>
-    </div>
+  <div style="padding: 40px; background: var(--glass); border-radius: 30px; border: 1px solid var(--border); width: 85%;">
+    <div style="font-size: 50px; margin-bottom: 15px;">🛡️</div>
+    <h2>Verify Security</h2>
+    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">Click the button below to confirm real interaction and start earning.</p>
+    <button class="btn-start" onclick="initRealClick()">START SYSTEM</button>
+  </div>
 </div>
 
 <div class="main-container">
-    <div id="viewingBadge">WATCHING AD: <span id="viewingSec">0</span>s</div>
-    <h2>ADS DASHBOARD</h2>
-    <div class="wallet-box">
-        <div id="adCount">0</div>
+  <div id="viewingBadge">WATCHING AD: <span id="viewingSec">0</span>s</div>
+  <h2>ADS DASHBOARD</h2>
+  <div class="wallet-box">
+    <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Current Balance</div>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px;">
+      <span style="font-size: 28px;">💰</span>
+      <span id="adCount">0</span>
     </div>
-    <div id="timerLabel">Status: <span id="countdown">Loading...</span></div>
+  </div>
+  <div class="status-section">
+    <div class="timer-info" id="timerLabel">Status: <span id="countdown">Waiting...</span></div>
     <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+  </div>
 </div>
 
 <script>
-// ১. রাইট ক্লিক এবং ইনস্পেক্ট বন্ধ করার লজিক
+// ১. কোড সুরক্ষা (Right-Click & F12 বন্ধ)
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.onkeydown = function(e) {
-    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73) || (e.ctrlKey && e.keyCode == 85)) return false;
 };
 
 const tg = window.Telegram.WebApp;
-if (!tg.initData || tg.platform === "unknown") {
-    document.getElementById("tgOnly").style.display = "flex";
-} else {
-    tg.ready(); tg.expand();
-    
-    // Firebase Config (এখানে আপনার কনফিগ আগের মতই থাকবে)
+
+// ২. টেলিগ্রাম চেক লজিক
+function checkTelegram() {
+    if (!tg.initData || tg.platform === "unknown") {
+        document.getElementById("tgOnly").style.display = "flex";
+        return false;
+    }
+    return true;
+}
+
+if (checkTelegram()) {
+    tg.ready();
+    tg.expand();
+
+    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyA1CLvIhHpfJpl41ZUfWQuD-dl7l8i56CU",
       authDomain: "update-a4568.firebaseapp.com",
@@ -70,13 +104,104 @@ if (!tg.initData || tg.platform === "unknown") {
       databaseURL: "https://update-a4568-default-rtdb.firebaseio.com",
       storageBucket: "update-a4568.firebasestorage.app",
       messagingSenderId: "898948028661",
-      appId: "1:898948028661:web:81421946783b8e9a9e8dbc"
+      appId: "1:898948028661:web:81421946783b8e9a9e8dbc",
+      measurementId: "G-3T8D1Z188L"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // বাকি সব জাভাস্ক্রিপ্ট লজিক আগের মতই থাকবে...
-    // (এখানে আপনার আগের দেওয়া সব লজিক পেস্ট করবেন)
+    let zone1 = "", zone2 = "", timerInterval, viewingInterval;
+    const clickSound = new Audio("https://www.soundjay.com/buttons/sounds/button-3.mp3");
+
+    // ডাটাবেস থেকে আইডি ফেচ
+    db.ref('monetag_config').on('value', (snap) => {
+        const data = snap.val();
+        if(data) {
+            zone1 = data.zone1; zone2 = data.zone2;
+            injectSDK(zone1, zone2);
+            document.getElementById("netStatus").textContent = "ONLINE";
+        }
+    });
+
+    function injectSDK(z1, z2) {
+        document.querySelectorAll('.monetag-script').forEach(e => e.remove());
+        [z1, z2].forEach(id => {
+            const s = document.createElement('script');
+            s.src = '//libtl.com/sdk.js'; s.dataset.zone = id; s.dataset.sdk = 'show_' + id;
+            s.className = 'monetag-script'; document.head.appendChild(s);
+        });
+    }
+
+    let adCount = localStorage.getItem("adCount") ? parseInt(localStorage.getItem("adCount")) : 0;
+    document.getElementById("adCount").textContent = adCount;
+    let currentIdx = localStorage.getItem("zoneIdx") ? parseInt(localStorage.getItem("zoneIdx")) : 1;
+
+    function showAdSmart() {
+        if(!navigator.onLine) { setTimeout(showAdSmart, 5000); return; }
+        const target = (currentIdx === 1) ? zone1 : zone2;
+        const adFn = window['show_' + target];
+
+        if(typeof adFn === "function") {
+            document.getElementById("countdown").textContent = "Loading Ad Content...";
+            adFn().then(() => {
+                // ✅ বিজ্ঞাপন স্ক্রিনে আসার পরেই কেবল আর্নিং শুরু হবে
+                adCount++; localStorage.setItem("adCount", adCount);
+                document.getElementById("adCount").textContent = adCount;
+                if(navigator.vibrate) navigator.vibrate(100);
+                clickSound.play();
+                
+                // টাইমার শুরু
+                startSyncedTimers(); 
+            }).catch(() => setTimeout(showAdSmart, 3000));
+        } else { setTimeout(showAdSmart, 3000); }
+        
+        currentIdx = (currentIdx === 1) ? 2 : 1;
+        localStorage.setItem("zoneIdx", currentIdx);
+    }
+
+    function startSyncedTimers() {
+        let timeLeft = Math.floor(Math.random() * (20 - 16 + 1)) + 16;
+        let total = timeLeft;
+        let watchTime = 0;
+        document.getElementById("timerLabel").innerHTML = 'Next Refresh in <span id="countdown"></span>s';
+        document.getElementById("viewingBadge").style.display = "block";
+
+        clearInterval(timerInterval); clearInterval(viewingInterval);
+
+        // ড্যাশবোর্ড কাউন্টডাউন
+        timerInterval = setInterval(() => {
+            if(!navigator.onLine) return;
+            timeLeft--;
+            document.getElementById("countdown").textContent = timeLeft;
+            document.getElementById("progressBar").style.width = ((total - timeLeft) / total * 100) + "%";
+            if(timeLeft <= 0) { clearInterval(timerInterval); location.reload(); }
+        }, 1000);
+
+        // বিজ্ঞাপন দেখার টাইমার (উপরের লাল ব্যাজ)
+        viewingInterval = setInterval(() => {
+            if(!navigator.onLine) return;
+            watchTime++;
+            document.getElementById("viewingSec").textContent = watchTime;
+        }, 1000);
+    }
+
+    // প্রথম রিয়েল ক্লিক হ্যান্ডলার
+    function initRealClick() {
+        document.getElementById("overlay").style.display = "none";
+        localStorage.setItem("systemStarted", "true");
+        showAdSmart();
+    }
+
+    window.onload = () => {
+        // যদি আগে থেকেই স্টার্ট করা থাকে
+        if(localStorage.getItem("systemStarted") === "true") {
+            document.getElementById("overlay").style.display = "none";
+            setTimeout(showAdSmart, 2000);
+        } else { 
+            // প্রথমবারের জন্য স্টার্ট বাটন দেখাবে
+            document.getElementById("overlay").style.display = "flex"; 
+        }
+    };
 }
 </script>
 </body>
