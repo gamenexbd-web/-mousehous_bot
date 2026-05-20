@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Protected Ads System</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+/* CSS আগের মতই থাকবে */
+:root { --primary: #00f2fe; --secondary: #4facfe; --accent: #ffd700; --glass: rgba(255, 255, 255, 0.08); --border: rgba(255, 255, 255, 0.15); }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+body { margin: 0; padding: 0; height: 100vh; font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #1e293b, #0f172a); display: flex; justify-content: center; align-items: center; color: #fff; overflow: hidden; }
+#tgOnly { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 10000; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; }
+#overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); z-index: 9999; display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; backdrop-filter: blur(15px); }
+.main-container { width: 92%; max-width: 400px; padding: 30px 20px; border-radius: 28px; background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border); text-align: center; position: relative; }
+#viewingBadge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #ff4757; color: white; padding: 5px 15px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; z-index: 100; }
+.wallet-box { background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 22px; margin-bottom: 25px; border: 1px solid var(--border); }
+#adCount { font-size: 45px; font-weight: 800; color: var(--accent); }
+.progress-track { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; overflow: hidden; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--secondary)); transition: width 1s linear; }
+.btn-start { padding: 18px 45px; font-size: 18px; font-weight: bold; background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; border-radius: 15px; color: #000; cursor: pointer; }
+</style>
+</head>
+<body oncontextmenu="return false;"> <!-- রাইট ক্লিক বন্ধ -->
+
+<div id="tgOnly">
+    <div style="font-size: 60px;">🚫</div>
+    <h2>Access Denied</h2>
+    <p>Only Telegram official app is allowed.</p>
+</div>
+
+<div id="overlay">
+    <div style="padding: 40px; background: var(--glass); border-radius: 30px; border: 1px solid var(--border); width: 85%;">
+        <h2>Verify Identity</h2>
+        <button class="btn-start" onclick="initRealClick()">START EARNING</button>
+    </div>
+</div>
+
+<div class="main-container">
+    <div id="viewingBadge">WATCHING AD: <span id="viewingSec">0</span>s</div>
+    <h2>ADS DASHBOARD</h2>
+    <div class="wallet-box">
+        <div id="adCount">0</div>
+    </div>
+    <div id="timerLabel">Status: <span id="countdown">Loading...</span></div>
+    <div class="progress-track"><div class="progress-fill" id="progressBar"></div></div>
+</div>
+
+<script>
+// ১. রাইট ক্লিক এবং ইনস্পেক্ট বন্ধ করার লজিক
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.onkeydown = function(e) {
+    if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+};
+
+const tg = window.Telegram.WebApp;
+if (!tg.initData || tg.platform === "unknown") {
+    document.getElementById("tgOnly").style.display = "flex";
+} else {
+    tg.ready(); tg.expand();
+    
+    // Firebase Config (এখানে আপনার কনফিগ আগের মতই থাকবে)
+    const firebaseConfig = {
+      apiKey: "AIzaSyA1CLvIhHpfJpl41ZUfWQuD-dl7l8i56CU",
+      authDomain: "update-a4568.firebaseapp.com",
+      projectId: "update-a4568",
+      databaseURL: "https://update-a4568-default-rtdb.firebaseio.com",
+      storageBucket: "update-a4568.firebasestorage.app",
+      messagingSenderId: "898948028661",
+      appId: "1:898948028661:web:81421946783b8e9a9e8dbc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // বাকি সব জাভাস্ক্রিপ্ট লজিক আগের মতই থাকবে...
+    // (এখানে আপনার আগের দেওয়া সব লজিক পেস্ট করবেন)
+}
+</script>
+</body>
+</html>
