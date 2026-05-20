@@ -119,7 +119,7 @@ button:hover {
 </div>
 
 <script>
-// 🔥 Firebase Configuration
+// 🔥 Firebase Configuration (আপনার দেওয়া কনফিগ)
 const firebaseConfig = {
   apiKey: "AIzaSyA1CLvIhHpfJpl41ZUfWQuD-dl7l8i56CU",
   authDomain: "update-a4568.firebaseapp.com",
@@ -132,26 +132,28 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let zone1 = "", zone2 = "";
+let zone1ID = "";
+let zone2ID = "";
 
-// ফায়ারবেস থেকে জোন আইডি ফেচ করা
+// ফায়ারবেস থেকে আইডি তুলে আনা
 db.ref('monetag_config').on('value', (snap) => {
     const data = snap.val();
     if(data) {
-        zone1 = data.zone1;
-        zone2 = data.zone2;
-        injectSDK(zone1, zone2);
+        zone1ID = data.zone1;
+        zone2ID = data.zone2;
+        injectMonetagSDK(zone1ID, zone2ID);
     }
 });
 
-function injectSDK(z1, z2) {
-    document.querySelectorAll('.monetag-sdk').forEach(e => e.remove());
-    [z1, z2].forEach(id => {
+function injectMonetagSDK(id1, id2) {
+    // আগের স্ক্রিপ্ট থাকলে ডিলিট করে নতুন ইনজেক্ট করা
+    document.querySelectorAll('.monetag-script').forEach(e => e.remove());
+    [id1, id2].forEach(id => {
         const s = document.createElement('script');
         s.src = '//libtl.com/sdk.js';
         s.dataset.zone = id;
         s.dataset.sdk = 'show_' + id;
-        s.className = 'monetag-sdk';
+        s.className = 'monetag-script';
         document.head.appendChild(s);
     });
 }
@@ -169,12 +171,20 @@ function vibrate(){
 }
 
 let adCount = localStorage.getItem("adCount") ? parseInt(localStorage.getItem("adCount")) : 0;
-document.getElementById("adCount").textContent = adCount;
+const adCountElement = document.getElementById("adCount");
+adCountElement.textContent = adCount;
 
-let currentZoneIdx = localStorage.getItem("zoneIdx") ? parseInt(localStorage.getItem("zoneIdx")) : 1;
+// অরিজিনাল লজিক: জোন পরিবর্তন (১ থাকলে ২ হবে, ২ থাকলে ১ হবে)
+let currentZone = localStorage.getItem("zone") ? parseInt(localStorage.getItem("zone")) : 1;
+
+function animateCount(){
+  adCountElement.style.transform="scale(1.3)";
+  setTimeout(()=>{ adCountElement.style.transform="scale(1)"; },200);
+}
 
 function showAdSmart() {
-  const targetID = (currentZoneIdx === 1) ? zone1 : zone2;
+  // ফায়ারবেস থেকে আসা আইডির উপর ভিত্তি করে ফাংশন কল
+  const targetID = (currentZone === 1) ? zone1ID : zone2ID;
   const openAd = window['show_' + targetID];
 
   if(typeof openAd === "function"){
@@ -187,15 +197,13 @@ function showAdSmart() {
 
     adCount++;
     localStorage.setItem("adCount", adCount);
-    document.getElementById("adCount").textContent = adCount;
-    
-    // Animate Count
-    document.getElementById("adCount").style.transform="scale(1.3)";
-    setTimeout(()=>{ document.getElementById("adCount").style.transform="scale(1)"; },200);
+    adCountElement.textContent = adCount;
+    animateCount();
   }
 
-  currentZoneIdx = (currentZoneIdx === 1) ? 2 : 1;
-  localStorage.setItem("zoneIdx", currentZoneIdx);
+  // জোন পাল্টানো (১০০% সমানভাবে)
+  currentZone = (currentZone === 1) ? 2 : 1;
+  localStorage.setItem("zone", currentZone);
 }
 
 function startAutoTimer() {
@@ -224,7 +232,7 @@ function enableAuto() {
 }
 
 window.addEventListener("load", () => {
-  // জোন আইডি লোড হওয়ার জন্য একটু সময় দেওয়া
+  // আইডি লোড হতে ২ সেকেন্ড সময় দেওয়া
   setTimeout(() => {
     localStorage.setItem("adMode", "auto");
     showAdSmart();
