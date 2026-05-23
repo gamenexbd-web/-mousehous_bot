@@ -8,8 +8,8 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
 <!-- ✅ Dual Zone SDK -->
-<script src='//libtl.com/sdk.js' data-zone='11042708' data-sdk='show_11042708'></script>
-<script src='//libtl.com/sdk.js' data-zone='11042715' data-sdk='show_11042715'></script>
+<script src='//libtl.com/sdk.js' data-zone='11047271' data-sdk='show_11047271'></script>
+<script src='//libtl.com/sdk.js' data-zone='11047275' data-sdk='show_11047275'></script>
 
 <style>
 body {
@@ -159,11 +159,11 @@ function animateCount(){
 function showAdSmart() {
 
   let openAd = null;
-  if (currentZone === 1 && typeof show_11042708 === "function") {
-    openAd = show_11042708;
+  if (currentZone === 1 && typeof show_11047271 === "function") {
+    openAd = show_11047271;
   } 
-  else if (currentZone === 2 && typeof show_11042715 === "function") {
-    openAd = show_11042715;
+  else if (currentZone === 2 && typeof show_11047275 === "function") {
+    openAd = show_11047275;
   }
 
   if(openAd){
